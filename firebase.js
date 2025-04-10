@@ -1,21 +1,26 @@
-// Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+import { getFirestore, collection, addDoc } from "firebase/firestore";
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-  apiKey: "AIzaSyAT1wzowG3OAiXwzYskYMq2xECTfoBzJkI",
-  authDomain: "my-portfolio-reviews-1da94.firebaseapp.com",
-  projectId: "my-portfolio-reviews-1da94",
-  storageBucket: "my-portfolio-reviews-1da94.firebasestorage.app",
-  messagingSenderId: "519431555510",
-  appId: "1:519431555510:web:6afb5d21714de9c0c79917",
-  measurementId: "G-9ZNGCESB62"
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_AUTH_DOMAIN",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_BUCKET",
+  messagingSenderId: "YOUR_ID",
+  appId: "YOUR_APP_ID"
 };
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+const db = getFirestore(app);
+await addDoc(collection(db, "reviews"), {
+  name: "Jagat",
+  rating: 5,
+  review: "Superb portfolio!",
+  timestamp: new Date()
+});
+import { getDocs } from "firebase/firestore";
+
+const querySnapshot = await getDocs(collection(db, "reviews"));
+querySnapshot.forEach((doc) => {
+  console.log(doc.id, " => ", doc.data());
+});

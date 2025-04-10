@@ -1353,7 +1353,12 @@ Perfect for businesses looking to scale with stability and speed.
                     </div></div></div></div><div class="owl-nav disabled"><button type="button" role="presentation" class="owl-prev"><span aria-label="Previous">‹</span></button><button type="button" role="presentation" class="owl-next"><span aria-label="Next">›</span></button></div><div class="owl-dots"><button role="button" class="owl-dot active"><span></span></button><button role="button" class="owl-dot"><span></span></button></div><div class="owl-nav disabled"><button type="button" role="presentation" class="owl-prev"><span aria-label="Previous">‹</span></button><button type="button" role="presentation" class="owl-next"><span aria-label="Next">›</span></button></div><div class="owl-dots"><button role="button" class="owl-dot"><span></span></button><button role="button" class="owl-dot active"><span></span></button><button role="button" class="owl-dot"><span></span></button><button role="button" class="owl-dot"><span></span></button><button role="button" class="owl-dot"><span></span></button></div><div class="owl-nav disabled"><button type="button" role="presentation" class="owl-prev"><span aria-label="Previous">‹</span></button><button type="button" role="presentation" class="owl-next"><span aria-label="Next">›</span></button></div><div class="owl-dots"><button role="button" class="owl-dot"><span></span></button><button role="button" class="owl-dot"><span></span></button><button role="button" class="owl-dot"><span></span></button><button role="button" class="owl-dot"><span></span></button><button role="button" class="owl-dot"><span></span></button><button role="button" class="owl-dot"><span></span></button><button role="button" class="owl-dot active"><span></span></button></div></div>
             </div>
         </div>
-    </section>
+    </section> <form id="testimonial-form">
+        <input type="text" id="name" placeholder="Your Name" required>
+        <input type="text" id="message" placeholder="Your Review" required>
+        <button type="submit">Submit</button>
+      </form>
+      
 
     <section class="pricing section-padding" id="pricing" data-scroll-index="5">
         <div class="container">
@@ -1615,6 +1620,128 @@ Perfect for businesses looking to scale with stability and speed.
     <script src="https://cdnjs.cloudflare.com/ajax/libs/magnific-popup.js/1.2.0/jquery.magnific-popup.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.isotope/3.0.6/isotope.pkgd.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    <script src="script.js"></script>
+    <script src="script.js"></script> 
+    <script type="module">
+        import { db } from './firebase.js';
+        import { collection, addDoc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+      
+        const form = document.getElementById("testimonial-form");
+        const container = document.getElementById("testimonial-slider"); // 🔁 Replace with your actual container ID
+      
+        // Submit new testimonial
+        form.addEventListener("submit", async (e) => {
+          e.preventDefault();
+      
+          const name = document.getElementById("name").value;
+          const message = document.getElementById("message").value;
+      
+          try {
+            await addDoc(collection(db, "testimonials"), {
+              name,
+              message,
+              timestamp: new Date()
+            });
+      
+            alert("Review submitted!");
+            form.reset();
+            loadTestimonials(); // Refresh after submit
+          } catch (error) {
+            console.error("Error adding testimonial: ", error);
+          }
+        });
+      
+        // Load testimonials and display in slider
+        async function loadTestimonials() {
+          const q = query(collection(db, "testimonials"), orderBy("timestamp", "desc"));
+          const querySnapshot = await getDocs(q);
+      
+          container.innerHTML = ""; // Clear existing content
+      
+          querySnapshot.forEach((doc) => {
+            const data = doc.data();
+            const div = document.createElement("div");
+            div.className = "testimonial-box"; // Or whatever class you're using for each card
+            div.innerHTML = `
+              <p>"${data.message}"</p>
+              <h4>- ${data.name}</h4>
+            `;
+            container.appendChild(div);
+          });
+        }
+      
+        loadTestimonials(); // Initial load
+      </script>
+
+<!-- Firebase Integration -->
+<script type="module">
+    import { db } from './firebase.js';
+    import { collection, addDoc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+  
+    const slider = document.querySelector(".testimonial-slider");
+  
+    // Load and show testimonials
+    async function loadTestimonials() {
+      const q = query(collection(db, "testimonials"), orderBy("timestamp", "desc"));
+      const querySnapshot = await getDocs(q);
+  
+      slider.innerHTML = ""; // Clear existing
+  
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+  
+        const div = document.createElement("div");
+        div.className = "item"; // Owl Carousel uses this class
+        div.innerHTML = `
+          <div class="testimonial-box">
+            <p>"${data.message}"</p>
+            <h4>- ${data.name}</h4>
+          </div>
+        `;
+        slider.appendChild(div);
+      });
+  
+      // Re-initialize Owl Carousel after adding items
+      $('.testimonial-slider').owlCarousel({
+        loop: true,
+        margin: 0,
+        autoplay: true,
+        responsiveClass: true,
+        responsive: {
+          0: { items: 1 },
+          600: { items: 2 },
+          1000: { items: 3 }
+        }
+      });
+    }
+  
+    loadTestimonials();
+  </script> <script type="module">
+  import { db } from './firebase.js';
+  import { collection, addDoc } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+
+  const form = document.getElementById("testimonial-form");
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const name = document.getElementById("name").value;
+    const message = document.getElementById("message").value;
+
+    try {
+      await addDoc(collection(db, "testimonials"), {
+        name,
+        message,
+        timestamp: new Date()
+      });
+
+      alert("Review added successfully!");
+      form.reset();
+    } catch (error) {
+      console.error("Error adding review: ", error);
+    }
+  });
+</script>
+
+
+
 	
 </body></html>
