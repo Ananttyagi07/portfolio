@@ -559,7 +559,12 @@ svg:not(:root).svg-inline--fa, svg:not(:host).svg-inline--fa {
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/magnific-popup.js/1.2.0/magnific-popup.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.1/css/all.min.css">
-</head>
+</head><!-- Firebase App (required) -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js"></script>
+
+<!-- Firebase Firestore -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js"></script>
+
 <body class="">
     <header class="header-area">
         <nav class="navbar navbar-expand-lg fixed-top navbar-shrink">
@@ -1353,11 +1358,18 @@ Perfect for businesses looking to scale with stability and speed.
                     </div></div></div></div><div class="owl-nav disabled"><button type="button" role="presentation" class="owl-prev"><span aria-label="Previous">‹</span></button><button type="button" role="presentation" class="owl-next"><span aria-label="Next">›</span></button></div><div class="owl-dots"><button role="button" class="owl-dot active"><span></span></button><button role="button" class="owl-dot"><span></span></button></div><div class="owl-nav disabled"><button type="button" role="presentation" class="owl-prev"><span aria-label="Previous">‹</span></button><button type="button" role="presentation" class="owl-next"><span aria-label="Next">›</span></button></div><div class="owl-dots"><button role="button" class="owl-dot"><span></span></button><button role="button" class="owl-dot active"><span></span></button><button role="button" class="owl-dot"><span></span></button><button role="button" class="owl-dot"><span></span></button><button role="button" class="owl-dot"><span></span></button></div><div class="owl-nav disabled"><button type="button" role="presentation" class="owl-prev"><span aria-label="Previous">‹</span></button><button type="button" role="presentation" class="owl-next"><span aria-label="Next">›</span></button></div><div class="owl-dots"><button role="button" class="owl-dot"><span></span></button><button role="button" class="owl-dot"><span></span></button><button role="button" class="owl-dot"><span></span></button><button role="button" class="owl-dot"><span></span></button><button role="button" class="owl-dot"><span></span></button><button role="button" class="owl-dot"><span></span></button><button role="button" class="owl-dot active"><span></span></button></div></div>
             </div>
         </div>
-    </section> <form id="testimonial-form">
-        <input type="text" id="name" placeholder="Your Name" required>
-        <input type="text" id="message" placeholder="Your Review" required>
-        <button type="submit">Submit</button>
-      </form>
+<!-- Add Review Form -->
+<div style="margin-top: 30px;">
+    <input type="text" id="reviewerName" placeholder="Your Name" required />
+    <textarea id="reviewText" placeholder="Write your review..." required></textarea>
+    <button id="submitReview">Submit Review</button>
+  </div>
+  
+  <!-- Testimonial Container (already existing) -->
+  <div id="testimonial-container" class="testimonial-slider">
+    <!-- Dynamic Reviews Load Here -->
+  </div>
+  
       
 
     <section class="pricing section-padding" id="pricing" data-scroll-index="5">
@@ -1621,127 +1633,54 @@ Perfect for businesses looking to scale with stability and speed.
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.isotope/3.0.6/isotope.pkgd.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script src="script.js"></script> 
-    <script type="module">
-        import { db } from './firebase.js';
-        import { collection, addDoc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
-      
-        const form = document.getElementById("testimonial-form");
-        const container = document.getElementById("testimonial-slider"); // 🔁 Replace with your actual container ID
-      
-        // Submit new testimonial
-        form.addEventListener("submit", async (e) => {
-          e.preventDefault();
-      
-          const name = document.getElementById("name").value;
-          const message = document.getElementById("message").value;
-      
-          try {
-            await addDoc(collection(db, "testimonials"), {
-              name,
-              message,
-              timestamp: new Date()
-            });
-      
-            alert("Review submitted!");
-            form.reset();
-            loadTestimonials(); // Refresh after submit
-          } catch (error) {
-            console.error("Error adding testimonial: ", error);
-          }
-        });
-      
-        // Load testimonials and display in slider
-        async function loadTestimonials() {
-          const q = query(collection(db, "testimonials"), orderBy("timestamp", "desc"));
-          const querySnapshot = await getDocs(q);
-      
-          container.innerHTML = ""; // Clear existing content
-      
-          querySnapshot.forEach((doc) => {
-            const data = doc.data();
-            const div = document.createElement("div");
-            div.className = "testimonial-box"; // Or whatever class you're using for each card
-            div.innerHTML = `
-              <p>"${data.message}"</p>
-              <h4>- ${data.name}</h4>
-            `;
-            container.appendChild(div);
-          });
-        }
-      
-        loadTestimonials(); // Initial load
-      </script>
-
-<!-- Firebase Integration -->
+    
+ <!-- Firebase & Firestore SDKs -->
 <script type="module">
-    import { db } from './firebase.js';
-    import { collection, addDoc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+    // Firebase SDKs
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+    import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
   
-    const slider = document.querySelector(".testimonial-slider");
+    // ✅ Tera Config
+    const firebaseConfig = {
+      apiKey: "AIzaSyAT1wzowG3OAiXwzYskYMq2xECTfoBzJkI",
+      authDomain: "my-portfolio-reviews-1da94.firebaseapp.com",
+      projectId: "my-portfolio-reviews-1da94",
+      storageBucket: "my-portfolio-reviews-1da94.firebasestorage.app",
+      messagingSenderId: "519431555510",
+      appId: "1:519431555510:web:6afb5d21714de9c0c79917",
+      measurementId: "G-9ZNGCESB62"
+    };
   
-    // Load and show testimonials
-    async function loadTestimonials() {
-      const q = query(collection(db, "testimonials"), orderBy("timestamp", "desc"));
-      const querySnapshot = await getDocs(q);
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
   
-      slider.innerHTML = ""; // Clear existing
+    // 🔘 Add Review Button Handler
+    document.getElementById("submitReview").addEventListener("click", async () => {
+      const name = document.getElementById("reviewerName").value;
+      const text = document.getElementById("reviewText").value;
   
-      querySnapshot.forEach((doc) => {
-        const data = doc.data();
+      if (name && text) {
+        await addDoc(collection(db, "testimonials"), { name, text });
+        alert("Review submitted successfully!");
+        window.location.reload(); // Refresh to load the new review
+      } else {
+        alert("Please fill in both name and review.");
+      }
+    });
   
-        const div = document.createElement("div");
-        div.className = "item"; // Owl Carousel uses this class
-        div.innerHTML = `
-          <div class="testimonial-box">
-            <p>"${data.message}"</p>
-            <h4>- ${data.name}</h4>
-          </div>
-        `;
-        slider.appendChild(div);
-      });
-  
-      // Re-initialize Owl Carousel after adding items
-      $('.testimonial-slider').owlCarousel({
-        loop: true,
-        margin: 0,
-        autoplay: true,
-        responsiveClass: true,
-        responsive: {
-          0: { items: 1 },
-          600: { items: 2 },
-          1000: { items: 3 }
-        }
-      });
-    }
-  
-    loadTestimonials();
-  </script> <script type="module">
-  import { db } from './firebase.js';
-  import { collection, addDoc } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
-
-  const form = document.getElementById("testimonial-form");
-
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const name = document.getElementById("name").value;
-    const message = document.getElementById("message").value;
-
-    try {
-      await addDoc(collection(db, "testimonials"), {
-        name,
-        message,
-        timestamp: new Date()
-      });
-
-      alert("Review added successfully!");
-      form.reset();
-    } catch (error) {
-      console.error("Error adding review: ", error);
-    }
-  });
-</script>
-
-
+    // 📤 Load Reviews
+    const testimonialContainer = document.getElementById("testimonial-container");
+    const querySnapshot = await getDocs(collection(db, "testimonials"));
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+      const reviewBox = document.createElement("div");
+      reviewBox.className = "testimonial-box";
+      reviewBox.innerHTML = `<p>${data.text}</p><h4>- ${data.name}</h4>`;
+      testimonialContainer.appendChild(reviewBox);
+    });
+  </script>
+         
 
 	
 </body></html>
